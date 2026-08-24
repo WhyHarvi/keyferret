@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Game {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  igdbId      Int           @unique @map("igdb_id")
+  name        String
+  slug        String        @unique
+  coverUrl    String?       @map("cover_url")
+  releaseDate DateTime?     @map("release_date") @db.Timestamptz(6)
+  rating      Float?
+  metadata    Json
+  mappings    GameMapping[]
+  offers      Offer[]
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("games")
+}
+
+model GameMapping {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gameId     String   @map("game_id") @db.Uuid
+  provider   String
+  externalId String   @map("external_id")
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([provider, externalId])
+  @@unique([gameId, provider])
+  @@index([gameId])
+  @@map("game_mappings")
+}
+
+model Store {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider   String
+  externalId String   @map("external_id")
+  name       String
+  active     Boolean  @default(true)
+  offers     Offer[]
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([provider, externalId])
+  @@map("stores")
+}
+
+model Offer {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gameId          String   @map("game_id") @db.Uuid
+  storeId         String   @map("store_id") @db.Uuid
+  provider        String
+  providerGameId  String   @map("provider_game_id")
+  providerOfferId String   @map("provider_offer_id")
+  price           Decimal  @db.Decimal(10, 2)
+  regularPrice    Decimal  @map("regular_price") @db.Decimal(10, 2)
+  savings         Float
+  currency        String   @default("USD")
+  purchaseUrl     String   @map("purchase_url")
+  lastUpdated     DateTime @map("last_updated") @db.Timestamptz(6)
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([provider, providerOfferId])
+  @@index([gameId, lastUpdated])
+  @@index([storeId])
+  @@map("offers")
+}

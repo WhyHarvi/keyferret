@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ---------------------------------------------------------------
+   Design tokens — declared once here, used everywhere via
+   Tailwind utilities (bg-background, text-text-main, font-display, ...)
+   or raw CSS (var(--color-accent)).
+
+   Dark theme, modeled on arise-str.vercel.app's actual site tokens
+   (inspected live: near-black surfaces, a red-to-orange accent
+   gradient, Manrope for all type). Manrope is loaded via next/font
+   in app/layout.tsx and exposed as the --font-manrope CSS variable.
+----------------------------------------------------------------- */
+
+@theme {
+  /* Surfaces */
+  --color-background: #0a0a0a;   /* page background */
+  --color-surface: #171717;      /* card background */
+  --color-surface-2: #242424;    /* pill nav / secondary surface */
+  --color-border: #3a3a3a;       /* visible dividers on dark surfaces */
+
+  /* Text */
+  --color-text-main: #fafafa;    /* primary body/heading text */
+  --color-text-muted: #aaaaaa;   /* secondary/supporting text */
+
+  /* Accent — red-to-orange gradient used for CTAs and active states */
+  --color-accent: #ec1313;
+  --color-accent-2: #f45925;
+
+  /* Type */
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-text: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text-main);
+  font-family: var(--font-text);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}
+
+/* Hides scrollbars on horizontally-scrolling rows (Trending, etc.) while
+   keeping the element natively scrollable via drag/touch/wheel. */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
