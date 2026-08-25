@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import GamePage from "@/components/GamePage";
 import { getPopularGames } from "@/lib/igdb";
 import { getGameBySlug } from "@/lib/game-repository";
-import { absoluteUrl, productJsonLd } from "@/lib/seo";
+import { getOffersForGame } from "@/lib/pricing/pricing.service";
+import { absoluteUrl, breadcrumbJsonLd, productJsonLd, socialMeta } from "@/lib/seo";
+import { slugifyGenre } from "@/lib/genres";
 import type { Game } from "@/lib/types";
 
 type GameDetailPageProps = {
@@ -15,10 +17,14 @@ export async function generateMetadata({ params }: GameDetailPageProps): Promise
   const game = await getGameBySlug(slug);
   if (!game) return { title: "Game not found — KeyFerret" };
 
+  const title = `${game.title} — Compare prices | KeyFerret`;
+  const description = game.tagline ?? game.description;
+
   return {
-    title: `${game.title} — Compare prices | KeyFerret`,
-    description: game.tagline ?? game.description,
+    title,
+    description,
     alternates: { canonical: absoluteUrl(`/game/${slug}`) },
+    ...socialMeta({ title: game.title, description, path: `/game/${slug}`, image: game.coverImage }),
   };
 }
 
@@ -37,11 +43,31 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
 
   if (!game) notFound();
 
+  // Best-effort: a pricing failure (rate limit, DB hiccup) should still let
+  // the page render — it just falls back to a plain Product listing without
+  // the AggregateOffer block instead of failing the whole request.
+  const pricing = await getOffersForGame(slug).catch(() => undefined);
+
+  const breadcrumbItems = game.genres.length > 0
+    ? [
+        { name: "Home", path: "/" },
+        { name: game.genres[0], path: `/genre/${slugifyGenre(game.genres[0])}` },
+        { name: game.title, path: `/game/${game.slug}` },
+      ]
+    : [
+        { name: "Home", path: "/" },
+        { name: game.title, path: `/game/${game.slug}` },
+      ];
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(game)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(game, pricing)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }}
       />
       <GamePage game={game} relatedGames={getRelatedGames(game, games)} />
     </>

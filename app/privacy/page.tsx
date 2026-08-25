@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — KeyFerret",
   description: "How KeyFerret collects, uses, and protects your information.",
+  alternates: { canonical: absoluteUrl("/privacy") },
 };
 
 const h2 = "text-lg font-semibold text-text-main";

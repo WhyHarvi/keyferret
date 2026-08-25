@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
 import Navbar from "@/components/Navbar";
-import { SITE_URL } from "@/lib/seo";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -13,10 +13,26 @@ const manrope = Manrope({
 
 const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
 
+const SITE_DESCRIPTION = "Find the cheapest price for any game, compared across every storefront that sells it.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "KeyFerret",
-  description: "Find the cheapest price for any game.",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    siteName: "KeyFerret",
+    type: "website",
+    locale: "en_US",
+    title: "KeyFerret",
+    description: SITE_DESCRIPTION,
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KeyFerret",
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
   ...(adsenseClientId ? { other: { "google-adsense-account": adsenseClientId } } : {}),
 };
 

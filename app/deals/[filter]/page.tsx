@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import DealsPage from "@/components/DealsPage";
 import { getCheapSharkDeals } from "@/lib/pricing/cheapshark";
 import { DEAL_FILTERS, getDealFilter } from "@/lib/deal-filters";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, socialMeta } from "@/lib/seo";
 
 type DealsFilterPageProps = {
   params: Promise<{ filter: string }>;
@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: DealsFilterPageProps): Promis
     title: `${filter.label} — KeyFerret`,
     description: filter.description,
     alternates: { canonical: absoluteUrl(filter.href) },
+    ...socialMeta({ title: filter.label, description: filter.description, path: filter.href }),
   };
 }
 

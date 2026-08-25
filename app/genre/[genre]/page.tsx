@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import GameGridPage from "@/components/GameGridPage";
 import { getPopularGames } from "@/lib/igdb";
 import { genreIcon, getGamesByGenreSlug, getGenreCounts } from "@/lib/genres";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, breadcrumbJsonLd, socialMeta } from "@/lib/seo";
 
 type GenrePageProps = {
   params: Promise<{ genre: string }>;
@@ -20,10 +20,14 @@ export async function generateMetadata({ params }: GenrePageProps): Promise<Meta
   const match = getGamesByGenreSlug(games, genre);
   if (!match) return { title: "Genre not found — KeyFerret" };
 
+  const title = `${match.genre} games — KeyFerret`;
+  const description = `Every ${match.genre} game in the catalog, with prices compared across every storefront that sells it.`;
+
   return {
-    title: `${match.genre} games — KeyFerret`,
-    description: `Every ${match.genre} game in the catalog, with prices compared across every storefront that sells it.`,
+    title,
+    description,
     alternates: { canonical: absoluteUrl(`/genre/${genre}`) },
+    ...socialMeta({ title: `${match.genre} games`, description, path: `/genre/${genre}` }),
   };
 }
 
@@ -35,13 +39,26 @@ export default async function GenrePage({ params }: GenrePageProps) {
   if (!match) notFound();
 
   return (
-    <GameGridPage
-      eyebrow="Genre"
-      title={match.genre}
-      icon={genreIcon(match.genre)}
-      games={match.games}
-      backHref="/#browse"
-      backLabel="Back to browse"
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              { name: match.genre, path: `/genre/${genre}` },
+            ]),
+          ),
+        }}
+      />
+      <GameGridPage
+        eyebrow="Genre"
+        title={match.genre}
+        icon={genreIcon(match.genre)}
+        games={match.games}
+        backHref="/#browse"
+        backLabel="Back to browse"
+      />
+    </>
   );
 }
