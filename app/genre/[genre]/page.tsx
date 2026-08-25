@@ -16,7 +16,12 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: GenrePageProps): Promise<Metadata> {
   const { genre } = await params;
-  const games = await getPopularGames(100);
+  // Same reasoning as the game page: a thrown lookup (IGDB rate limit) must
+  // never 500 the whole page — fall back to a generic title and let the page
+  // component's own fetch determine the real outcome.
+  const games = await getPopularGames(100).catch(() => null);
+  if (games === null) return { title: "KeyFerret" };
+
   const match = getGamesByGenreSlug(games, genre);
   if (!match) return { title: "Genre not found — KeyFerret" };
 

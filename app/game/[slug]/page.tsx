@@ -14,7 +14,13 @@ type GameDetailPageProps = {
 
 export async function generateMetadata({ params }: GameDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const game = await getGameBySlug(slug);
+  // Distinguish "lookup threw" (IGDB rate limit, DB hiccup — transient, the
+  // game may well exist) from "lookup succeeded but found nothing" (genuinely
+  // absent). An uncaught throw here 500s the entire page instead of letting
+  // the page component's own fetch — and notFound()/error.tsx — decide the
+  // real outcome, so this must never throw.
+  const game = await getGameBySlug(slug).catch(() => null);
+  if (game === null) return { title: "KeyFerret" };
   if (!game) return { title: "Game not found — KeyFerret" };
 
   const title = `${game.title} — Compare prices | KeyFerret`;
