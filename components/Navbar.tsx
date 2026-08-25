@@ -75,62 +75,65 @@ export default function Navbar() {
           <span className="text-xl font-bold tracking-tight text-text-main">KeyFerret</span>
         </Link>
 
-        <AnimatePresence mode="wait" initial={false}>
-          {searchOpen ? (
-            <motion.div
-              key="search"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex flex-1 items-center"
-            >
-              <SearchBar onClose={() => setSearchOpen(false)} className="w-full" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="nav"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex flex-1 items-center justify-between"
-            >
-              {/* Center pill nav (desktop) — glassmorphic, with an animated sliding highlight */}
-              <nav
-                aria-label="Main links"
-                className="hidden flex-1 items-center justify-center gap-1 md:flex"
-              >
-                <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md">
-                  {navItems.map((item) => {
-                    const active = pathname === item.href || (item.href === "/#trending" && activeHash === "#trending");
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        aria-current={active ? "location" : undefined}
-                        onClick={() => select(item.href)}
-                        className={`relative rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                          active ? "text-text-main" : "text-text-muted hover:text-text-main"
-                        }`}
-                      >
-                        {active && (
-                          <motion.span
-                            layoutId="nav-active-pill"
-                            className="absolute inset-0 rounded-full border border-white/15 bg-white/10 shadow-[0_2px_14px_rgba(0,0,0,0.4)] backdrop-blur-sm"
-                            transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                          />
-                        )}
-                        <span className="relative z-10">{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </nav>
+        <div className="flex flex-1 items-center justify-between">
+          {/* Center pill nav (desktop) — glassmorphic, with an animated sliding
+              highlight. Stays mounted and evenly spaced regardless of search
+              state — it used to get replaced entirely while searching, which
+              hid Browse/Deals/Popular/Watchlist and let the search input
+              stretch across the whole bar. */}
+          <nav
+            aria-label="Main links"
+            className="hidden flex-1 items-center justify-center gap-1 md:flex"
+          >
+            <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md">
+              {navItems.map((item) => {
+                const active = pathname === item.href || (item.href === "/#trending" && activeHash === "#trending");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? "location" : undefined}
+                    onClick={() => select(item.href)}
+                    className={`relative rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                      active ? "text-text-main" : "text-text-muted hover:text-text-main"
+                    }`}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="nav-active-pill"
+                        className="absolute inset-0 rounded-full border border-white/15 bg-white/10 shadow-[0_2px_14px_rgba(0,0,0,0.4)] backdrop-blur-sm"
+                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      />
+                    )}
+                    <span className="relative z-10">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
 
-              {/* Right actions */}
-              <div className="flex flex-1 items-center justify-end gap-2 md:flex-none">
-                <button
+          {/* Right actions — the search box, when open, is confined here
+              (capped width) instead of taking over the whole bar. */}
+          <div className="flex flex-1 items-center justify-end gap-2 md:flex-none">
+            <AnimatePresence mode="wait" initial={false}>
+              {searchOpen ? (
+                <motion.div
+                  key="search"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "100%" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                  className="w-full max-w-55 sm:max-w-xs"
+                >
+                  <SearchBar onClose={() => setSearchOpen(false)} className="w-full" />
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="icon"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
                   type="button"
                   aria-label="Search games"
                   onClick={openSearch}
@@ -140,34 +143,34 @@ export default function Navbar() {
                   <span className="hidden items-center gap-0.5 rounded-md border border-border bg-white/5 px-1.5 py-0.5 text-[11px] font-medium text-text-muted sm:flex">
                     <span className="text-xs">⌘</span>K
                   </span>
-                </button>
+                </motion.button>
+              )}
+            </AnimatePresence>
 
-                {/* Mobile menu toggle */}
-                <button
-                  type="button"
-                  aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-                  aria-expanded={menuOpen}
-                  aria-controls="mobile-nav-menu"
-                  onClick={() => setMenuOpen((open) => !open)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:text-text-main md:hidden"
+            {/* Mobile menu toggle */}
+            <button
+              type="button"
+              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav-menu"
+              onClick={() => setMenuOpen((open) => !open)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-muted transition-colors hover:text-text-main md:hidden"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={menuOpen ? "close" : "menu"}
+                  initial={{ opacity: 0, scale: 0.82 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.82 }}
+                  transition={{ duration: 0.14 }}
+                  className="flex"
                 >
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.span
-                      key={menuOpen ? "close" : "menu"}
-                      initial={{ opacity: 0, scale: 0.82 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.82 }}
-                      transition={{ duration: 0.14 }}
-                      className="flex"
-                    >
-                      {menuOpen ? <X aria-hidden="true" size={20} /> : <Menu aria-hidden="true" size={20} />}
-                    </motion.span>
-                  </AnimatePresence>
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  {menuOpen ? <X aria-hidden="true" size={20} /> : <Menu aria-hidden="true" size={20} />}
+                </motion.span>
+              </AnimatePresence>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Mobile menu panel */}
