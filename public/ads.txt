@@ -1,4 +1,1 @@
-# No ad network configured yet.
-# Once approved for Google AdSense, replace this file with the single line
-# your AdSense account gives you, of the form:
-#   google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+google.com, pub-2019414791707130, DIRECT, f08c47fec0942fa0

@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "KeyFerret",
   description: "Find the cheapest price for any game.",
+  ...(adsenseClientId ? { other: { "google-adsense-account": adsenseClientId } } : {}),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
