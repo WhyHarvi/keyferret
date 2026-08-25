@@ -26,6 +26,26 @@ export async function logEvent(input: AnalyticsEventInput): Promise<void> {
   }
 }
 
+// Ranks games by view count in the trailing window — the signal behind the
+// homepage's featured carousel. "game_view" (not "search") is used because
+// search events only log the query text, not which game (if any) it led to;
+// game_view is the one event type that reliably ties back to a specific slug.
+export async function getTopViewedGameSlugs(sinceDays = 1, limit = 4): Promise<string[]> {
+  const prisma = getPrisma();
+  if (!prisma) return [];
+
+  const since = new Date(Date.now() - sinceDays * 86_400_000);
+  const rows = await prisma.analyticsEvent.groupBy({
+    by: ["gameSlug"],
+    where: { type: "game_view", gameSlug: { not: null }, createdAt: { gte: since } },
+    _count: { gameSlug: true },
+    orderBy: { _count: { gameSlug: "desc" } },
+    take: limit,
+  });
+
+  return rows.map((row) => row.gameSlug).filter((slug): slug is string => Boolean(slug));
+}
+
 export type AnalyticsSummary = {
   totalEvents: number;
   byType: Array<{ type: string; count: number }>;

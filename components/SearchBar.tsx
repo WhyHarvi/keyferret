@@ -96,7 +96,7 @@ export default function SearchBar({ onClose, className = "" }: SearchBarProps) {
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.15 }}
-        className="absolute left-0 top-[calc(100%+8px)] z-50 w-full max-w-sm rounded-2xl border border-white/10 bg-surface/95 p-2 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl"
+        className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-2xl border border-white/10 bg-surface/95 p-2 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl"
       >
         <p className="px-3 pb-2 pt-1 text-xs font-medium uppercase tracking-wide text-text-muted">
           {query.trim() ? `Results for "${query.trim()}"` : "Trending now"}
@@ -144,10 +144,10 @@ export default function SearchBar({ onClose, className = "" }: SearchBarProps) {
                       <span className="block truncate text-xs text-text-muted">
                         {game.genres.length > 0 ? game.genres.join(" · ") : "—"}
                       </span>
-                    </span>
-                    <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-accent">
-                      Check price
-                      <ArrowUpRight size={13} aria-hidden="true" />
+                      <span className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-accent">
+                        Check price
+                        <ArrowUpRight size={12} aria-hidden="true" />
+                      </span>
                     </span>
                   </Link>
                 </li>

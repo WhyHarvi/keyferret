@@ -3,14 +3,23 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { Star } from "lucide-react";
-import { bestPrice, discountPercent, type Game } from "@/lib/types";
+import { Flame, Star, TrendingUp } from "lucide-react";
+import type { FeaturedGame } from "@/lib/featured-games";
 
 type HeroCarouselProps = {
-  games: Game[];
+  games: FeaturedGame[];
 };
 
 const AUTO_ADVANCE_MS = 6000;
+
+// Fixed to en-US deliberately: this renders server-side (unlike the per-game
+// price panel, which only shows a price after a client fetch resolves), so
+// an Intl.NumberFormat(undefined, ...) locale here would format one way on
+// the server and possibly another in the browser — a hydration mismatch,
+// the same bug already hit and fixed once in DealListingCard.
+function formatPrice(amount: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(amount);
+}
 
 export default function HeroCarousel({ games }: HeroCarouselProps) {
   const [index, setIndex] = useState(0);
@@ -26,9 +35,8 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
 
   if (games.length === 0) return null;
 
-  const game = games[index];
-  const price = game.prices.length > 0 ? bestPrice(game.prices) : null;
-  const discount = price ? discountPercent(price) : null;
+  const featured = games[index];
+  const { game, bestPrice, regularPrice, discountPercent, currency, storeName, source } = featured;
   const year = game.releaseDate ? game.releaseDate.slice(0, 4) : null;
 
   return (
@@ -42,10 +50,10 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
       <AnimatePresence mode="sync">
         <motion.div
           key={game.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
+          transition={{ opacity: { duration: 0.6, ease: "easeInOut" }, scale: { duration: AUTO_ADVANCE_MS / 1000, ease: "linear" } }}
           className="absolute inset-0"
           style={{ background: `linear-gradient(135deg, ${game.coverGradient[0]}, ${game.coverGradient[1]})` }}
         >
@@ -70,13 +78,22 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
-              {discount !== null && (
-                <span className="mb-3 inline-flex items-center rounded-full bg-gradient-to-br from-accent to-accent-2 px-3 py-1 text-xs font-semibold text-white">
-                  {discount}% off right now
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {source === "trending" && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-text-main backdrop-blur-md">
+                    <TrendingUp size={13} className="text-accent" aria-hidden="true" />
+                    Trending among players
+                  </span>
+                )}
+                {discountPercent !== null && discountPercent > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-accent to-accent-2 px-3 py-1 text-xs font-bold text-white shadow-[0_4px_20px_-4px_rgba(236,19,19,0.6)]">
+                    <Flame size={13} aria-hidden="true" />
+                    {discountPercent}% off right now
+                  </span>
+                )}
+              </div>
 
-              <h1 className="max-w-2xl font-display text-4xl font-extrabold tracking-[-0.02em] text-text-main sm:text-6xl">
+              <h1 className="mt-3 max-w-2xl font-display text-4xl font-extrabold tracking-[-0.02em] text-text-main sm:text-6xl">
                 {game.title}
               </h1>
 
@@ -84,7 +101,7 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
                 {game.tagline ?? game.description}
               </p>
 
-              <div className="mt-4 flex items-center gap-4 text-sm text-text-muted">
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-text-muted">
                 {game.rating > 0 && (
                   <span className="flex items-center gap-1.5">
                     <Star size={15} className="fill-amber-400 text-amber-400" aria-hidden="true" />
@@ -95,13 +112,27 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
                 {game.platforms.length > 0 && <span className="truncate">{game.platforms.join(" · ")}</span>}
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              {bestPrice !== null && (
+                <div className="mt-6 flex items-baseline gap-3">
+                  <span className="text-3xl font-bold tabular-nums text-text-main sm:text-4xl">
+                    {formatPrice(bestPrice, currency)}
+                  </span>
+                  {regularPrice !== null && regularPrice > bestPrice && (
+                    <span className="text-base tabular-nums text-text-muted line-through">
+                      {formatPrice(regularPrice, currency)}
+                    </span>
+                  )}
+                  {storeName && <span className="text-sm text-text-muted">at {storeName}</span>}
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Link
                   href={`/game/${game.slug}`}
                   scroll
                   className="flex items-center gap-2 rounded-lg bg-gradient-to-br from-accent to-accent-2 px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 >
-                  {price ? `Get this deal — $${price.price.toFixed(2)}` : "View game"}
+                  {bestPrice !== null ? `Get this deal — ${formatPrice(bestPrice, currency)}` : "View game"}
                 </Link>
                 <Link
                   href="#browse"
@@ -115,11 +146,11 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
 
           {games.length > 1 && (
             <div className="mt-9 flex items-center gap-2">
-              {games.map((g, i) => (
+              {games.map((featuredGame, i) => (
                 <button
-                  key={g.id}
+                  key={featuredGame.game.id}
                   type="button"
-                  aria-label={`Show featured deal ${i + 1}: ${g.title}`}
+                  aria-label={`Show featured deal ${i + 1}: ${featuredGame.game.title}`}
                   aria-current={i === index}
                   onClick={() => setIndex(i)}
                   className={`h-1.5 rounded-full transition-all duration-300 ${

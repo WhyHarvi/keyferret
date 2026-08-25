@@ -4,10 +4,10 @@ import BrowseSection from "@/components/BrowseSection";
 import AdSlot from "@/components/AdSlot";
 import Footer from "@/components/Footer";
 import { getPopularGames } from "@/lib/igdb";
+import { getFeaturedGames } from "@/lib/featured-games";
 
 export default async function Home() {
-  const games = await getPopularGames();
-  const featuredGames = games.filter((game) => game.backdropImage).slice(0, 4);
+  const [games, featuredGames] = await Promise.all([getPopularGames(), getFeaturedGames()]);
   return (
     <div className="min-h-screen bg-background">
       <main>
