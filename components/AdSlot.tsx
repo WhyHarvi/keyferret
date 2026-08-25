@@ -57,11 +57,16 @@ export default function AdSlot({ format = "banner", slotId = "0000000000", class
     );
   }
 
+  // No minHeight here: with data-ad-format="auto" + full-width-responsive,
+  // Google's script sizes and collapses this element itself. Forcing a
+  // minimum height would keep a visibly empty block reserved even on an
+  // unfilled impression — normal on an unapproved account or a plain no-fill,
+  // not just a local-dev thing.
   return (
     <ins
       ref={insRef}
       className={`adsbygoogle block ${className}`}
-      style={{ display: "block", minHeight: meta.minHeight }}
+      style={{ display: "block" }}
       data-ad-client={ADSENSE_CLIENT_ID}
       data-ad-slot={slotId}
       data-ad-format="auto"

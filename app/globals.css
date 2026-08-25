@@ -60,3 +60,13 @@ h1, h2, h3, h4 {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Responsive AdSense units (data-ad-format="auto" + full-width-responsive)
+   pre-reserve space for CLS prevention even when nothing fills the slot —
+   Google's own script marks that case with data-ad-status="unfilled" on the
+   <ins>, and this is their documented way to collapse it instead of leaving
+   a visibly empty block. Applies whenever an impression goes unfilled, not
+   just during an account's pending-review window. */
+ins.adsbygoogle[data-ad-status="unfilled"] {
+  display: none !important;
+}
