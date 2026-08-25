@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: "KeyFerret",
   description: SITE_DESCRIPTION,
   alternates: { canonical: SITE_URL },
+  verification: { google: "4j8vHM0VtkxOIRkD7THJE6sHg5psLNBBwLgbpXaqlCs" },
   openGraph: {
     siteName: "KeyFerret",
     type: "website",
