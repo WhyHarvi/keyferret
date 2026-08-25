@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import GamePage from "@/components/GamePage";
 import { getPopularGames } from "@/lib/igdb";
 import { getGameBySlug } from "@/lib/game-repository";
+import { absoluteUrl, productJsonLd } from "@/lib/seo";
 import type { Game } from "@/lib/types";
 
 type GameDetailPageProps = {
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: GameDetailPageProps): Promise
   return {
     title: `${game.title} — Compare prices | KeyFerret`,
     description: game.tagline ?? game.description,
+    alternates: { canonical: absoluteUrl(`/game/${slug}`) },
   };
 }
 
@@ -35,5 +37,13 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
 
   if (!game) notFound();
 
-  return <GamePage game={game} relatedGames={getRelatedGames(game, games)} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(game)) }}
+      />
+      <GamePage game={game} relatedGames={getRelatedGames(game, games)} />
+    </>
+  );
 }

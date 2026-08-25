@@ -76,3 +76,40 @@ model Offer {
   @@index([storeId])
   @@map("offers")
 }
+
+model AnalyticsEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type      String // "search" | "game_view" | "deal_click" | "offer_click"
+  path      String?
+  query     String? // search text, when type = "search"
+  gameSlug  String?  @map("game_slug")
+  storeName String?  @map("store_name") // outbound click target, when applicable
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([type, createdAt])
+  @@map("analytics_events")
+}
+
+model PriceAlert {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String
+  gameSlug          String    @map("game_slug")
+  gameName          String    @map("game_name")
+  thresholdPrice    Decimal?  @map("threshold_price") @db.Decimal(10, 2) // reserved for a future custom-threshold UI
+  referencePrice    Decimal   @map("reference_price") @db.Decimal(10, 2) // best price at signup; v1 alerts on any drop below this
+  currency          String    @default("USD")
+  status            String    @default("pending") // "pending" | "active" | "unsubscribed"
+  verifyToken       String    @unique @map("verify_token")
+  unsubscribeToken  String    @unique @map("unsubscribe_token")
+  verifiedAt        DateTime? @map("verified_at") @db.Timestamptz(6)
+  lastNotifiedAt    DateTime? @map("last_notified_at") @db.Timestamptz(6)
+  lastNotifiedPrice Decimal?  @map("last_notified_price") @db.Decimal(10, 2)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status, gameSlug])
+  @@index([email])
+  @@map("price_alerts")
+}

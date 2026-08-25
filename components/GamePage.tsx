@@ -1,18 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Calendar, Check, ChevronLeft, Gamepad2, Link2, Star, Tags } from "lucide-react";
+import { Bell, BellRing, Calendar, Check, ChevronLeft, Gamepad2, Link2, Star, Tags } from "lucide-react";
 import ScrollRow from "@/components/ScrollRow";
 import DealCard from "@/components/DealCard";
 import Footer from "@/components/Footer";
 import GameMedia from "@/components/GameMedia";
 import GameFacts from "@/components/GameFacts";
 import WatchlistButton from "@/components/WatchlistButton";
+import PriceAlertForm from "@/components/PriceAlertForm";
 import LivePriceCompare from "@/components/LivePriceCompare";
 import StickyPriceBar from "@/components/StickyPriceBar";
 import { genreIcon, slugifyGenre } from "@/lib/genres";
+import { trackEvent } from "@/lib/analytics-client";
+import { hasRequestedAlert, subscribeToAlertRequests } from "@/lib/alerts-client";
 import type { Game } from "@/lib/types";
 
 type GamePageProps = {
@@ -27,6 +30,12 @@ type GamePageProps = {
 export default function GamePage({ game, relatedGames }: GamePageProps) {
   const year = game.releaseDate ? game.releaseDate.slice(0, 4) : null;
   const [copied, setCopied] = useState(false);
+  const [showAlertForm, setShowAlertForm] = useState(false);
+  const alertRequested = useSyncExternalStore(subscribeToAlertRequests, () => hasRequestedAlert(game.slug), () => false);
+
+  useEffect(() => {
+    trackEvent({ type: "game_view", gameSlug: game.slug, path: `/game/${game.slug}` });
+  }, [game.slug]);
 
   const copyLink = async () => {
     try {
@@ -166,7 +175,29 @@ export default function GamePage({ game, relatedGames }: GamePageProps) {
                       )}
                       {copied ? "Link copied" : "Share"}
                     </button>
+                    {!alertRequested && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAlertForm((v) => !v)}
+                        aria-pressed={showAlertForm}
+                        className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-semibold text-text-main transition-colors hover:border-accent active:scale-[0.97]"
+                      >
+                        <Bell size={17} className="text-text-muted" aria-hidden="true" />
+                        Email me price drops
+                      </button>
+                    )}
+                    {alertRequested && (
+                      <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-4 text-sm font-semibold text-accent">
+                        <BellRing size={17} aria-hidden="true" />
+                        Alert requested
+                      </span>
+                    )}
                   </div>
+                  {showAlertForm && !alertRequested && (
+                    <div className="mt-3 max-w-md">
+                      <PriceAlertForm gameSlug={game.slug} gameName={game.title} onSuccess={() => setShowAlertForm(false)} />
+                    </div>
+                  )}
                   <div id="hero-cta-sentinel" />
 
                 </div>

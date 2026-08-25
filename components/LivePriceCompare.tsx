@@ -12,6 +12,7 @@ import { motion } from "motion/react";
 import { AlertTriangle, ArrowUpRight, Check, Flame, RefreshCw, Store, TrendingDown } from "lucide-react";
 import CountUp from "@/components/CountUp";
 import { formatPrice, usePricing, type OfferResponse } from "@/lib/pricing-client";
+import { trackEvent } from "@/lib/analytics-client";
 
 type Offer = OfferResponse["offers"][number];
 
@@ -253,6 +254,7 @@ export default function LivePriceCompare({ slug }: { slug: string }) {
                 href={offer.purchaseUrl}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
+                onClick={() => trackEvent({ type: "offer_click", gameSlug: slug, storeName: offer.storeName, metadata: { dealId: offer.dealId, price: offer.price } })}
                 aria-label={`View ${formatPrice(offer.price, offer.currency)} offer at ${offer.storeName}`}
                 className={`group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 rounded-2xl border p-4 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:grid-cols-[minmax(0,1fr)_110px_110px_130px] ${
                   index === 0

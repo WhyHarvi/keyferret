@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowUpRight, Search, X } from "lucide-react";
+import { trackEvent } from "@/lib/analytics-client";
 import type { Game } from "@/lib/types";
 
 type SearchBarProps = {
@@ -46,11 +47,13 @@ export default function SearchBar({ onClose, className = "" }: SearchBarProps) {
       fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal })
         .then((res) => {
           if (!res.ok) throw new Error("Search failed");
-          return res.json();
+          return res.json() as Promise<{ games: Game[]; source: string }>;
         })
         .then((data: { games: Game[]; source: string }) => {
-          setResults(Array.isArray(data.games) ? data.games : []);
+          const games = Array.isArray(data.games) ? data.games : [];
+          setResults(games);
           setLoading(false);
+          if (query.trim()) trackEvent({ type: "search", query: query.trim(), metadata: { resultCount: games.length } });
         })
         .catch((requestError: unknown) => {
           if (requestError instanceof DOMException && requestError.name === "AbortError") return;

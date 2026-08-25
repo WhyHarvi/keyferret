@@ -15,6 +15,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/games", label: "Browse" },
+  { href: "/deals", label: "Deals" },
   { href: "/#trending", label: "Popular" },
   { href: "/watchlist", label: "Watchlist" },
 ];

@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Layers } from "lucide-react";
 import GameGridPage from "@/components/GameGridPage";
 import { getPopularGames } from "@/lib/igdb";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "All games — KeyFerret",
   description: "Every game in the catalog, with prices compared across every storefront that sells it.",
+  alternates: { canonical: absoluteUrl("/games") },
 };
 
 export default async function AllGamesPage() {

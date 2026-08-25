@@ -25,7 +25,19 @@ function headers(): HeadersInit {
 // noisy errors on every page view until the window passes.
 let cooldownUntilMs = 0;
 
+// next dev never honors next:{revalidate} (Next only applies the fetch data
+// cache in a build/prod context), so a hand-rolled cache is what actually
+// cuts request volume while developing — same fix already applied in
+// lib/igdb.ts, for the same reason. Additive: callers that pass no
+// cacheSeconds (the live per-game offers lookup) are unaffected.
+const responseCache = new Map<string, { value: unknown; expiresAt: number }>();
+
 async function fetchCheapShark<T>(path: string, cacheSeconds?: number): Promise<T> {
+  if (cacheSeconds) {
+    const cached = responseCache.get(path);
+    if (cached && cached.expiresAt > Date.now()) return cached.value as T;
+  }
+
   const remainingCooldownMs = cooldownUntilMs - Date.now();
   if (remainingCooldownMs > 0) {
     throw new Error(`CheapShark is rate-limited; retry after ${Math.ceil(remainingCooldownMs / 1000)}s`);
@@ -43,7 +55,9 @@ async function fetchCheapShark<T>(path: string, cacheSeconds?: number): Promise<
     }
     throw new Error(`CheapShark request failed (${response.status})${retryAfter ? `; retry after ${retryAfter}s` : ""}`);
   }
-  return response.json() as Promise<T>;
+  const data = (await response.json()) as T;
+  if (cacheSeconds) responseCache.set(path, { value: data, expiresAt: Date.now() + cacheSeconds * 1000 });
+  return data;
 }
 
 function normalizeTitle(title: string): string {
@@ -107,4 +121,74 @@ export async function getCheapSharkOffers(cheapSharkGameId: string): Promise<{ o
 export async function getCheapSharkHistoricalLow(cheapSharkGameId: string): Promise<HistoricalLow | null> {
   const game = await fetchCheapShark<CheapSharkGame>(`/games?id=${encodeURIComponent(cheapSharkGameId)}`, 3600);
   return extractHistoricalLow(game);
+}
+
+type CheapSharkDealListItem = {
+  dealID: string;
+  title: string;
+  storeID: string;
+  salePrice: string;
+  normalPrice: string;
+  savings: string;
+  metacriticScore: string;
+  steamRatingText: string | null;
+  thumb: string;
+};
+
+export type Deal = {
+  dealId: string;
+  title: string;
+  storeId: string;
+  storeName: string;
+  price: number;
+  regularPrice: number;
+  savingsPercent: number;
+  metacriticScore: number | null;
+  steamRatingText: string | null;
+  thumbnailUrl: string;
+  purchaseUrl: string;
+};
+
+export type DealsQuery = {
+  storeID?: string;
+  upperPrice?: number;
+  lowerPrice?: number;
+  sortBy?: "Deal Rating" | "Savings" | "Price" | "Recent";
+  pageSize?: number;
+};
+
+// CheapShark's site-wide deal feed — distinct from getCheapSharkOffers, which
+// is scoped to a single already-known game. Backs the /deals pages (popular,
+// biggest discounts, under-$N) rather than the per-game price panel.
+export async function getCheapSharkDeals(query: DealsQuery = {}): Promise<Deal[]> {
+  const params = new URLSearchParams({ onSale: "1", pageSize: String(query.pageSize ?? 60) });
+  if (query.storeID) params.set("storeID", query.storeID);
+  if (query.upperPrice !== undefined) params.set("upperPrice", String(query.upperPrice));
+  if (query.lowerPrice !== undefined) params.set("lowerPrice", String(query.lowerPrice));
+  if (query.sortBy) {
+    params.set("sortBy", query.sortBy);
+    params.set("desc", "1");
+  }
+
+  const [deals, stores] = await Promise.all([
+    fetchCheapShark<CheapSharkDealListItem[]>(`/deals?${params}`, 900),
+    fetchCheapShark<CheapSharkStore[]>("/stores", 86_400),
+  ]);
+  const storeMap = new Map(stores.map((store) => [store.storeID, store]));
+
+  return deals
+    .map((deal) => ({
+      dealId: deal.dealID,
+      title: deal.title,
+      storeId: deal.storeID,
+      storeName: storeMap.get(deal.storeID)?.storeName || `Store ${deal.storeID}`,
+      price: Number(deal.salePrice),
+      regularPrice: Number(deal.normalPrice),
+      savingsPercent: Math.round(Number(deal.savings)),
+      metacriticScore: deal.metacriticScore && Number(deal.metacriticScore) > 0 ? Number(deal.metacriticScore) : null,
+      steamRatingText: deal.steamRatingText || null,
+      thumbnailUrl: deal.thumb,
+      purchaseUrl: `https://www.cheapshark.com/redirect?dealID=${deal.dealID}`,
+    }))
+    .filter((deal) => Number.isFinite(deal.price) && Number.isFinite(deal.regularPrice));
 }

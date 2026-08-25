@@ -13,6 +13,7 @@ const columns: FooterColumnData[] = [
     links: [
       { label: "Browse", href: "/games" },
       { label: "All games", href: "/games" },
+      { label: "Deals", href: "/deals" },
       { label: "Popular", href: "/#trending" },
       { label: "Watchlist", href: "/watchlist" },
     ],
@@ -28,9 +29,9 @@ const columns: FooterColumnData[] = [
   {
     title: "Legal",
     links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Cookie Policy", href: "#" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Cookie Policy", href: "/privacy#cookies" },
     ],
   },
 ];

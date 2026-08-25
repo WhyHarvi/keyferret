@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import GameGridPage from "@/components/GameGridPage";
 import { getPopularGames } from "@/lib/igdb";
 import { genreIcon, getGamesByGenreSlug, getGenreCounts } from "@/lib/genres";
+import { absoluteUrl } from "@/lib/seo";
 
 type GenrePageProps = {
   params: Promise<{ genre: string }>;
@@ -22,6 +23,7 @@ export async function generateMetadata({ params }: GenrePageProps): Promise<Meta
   return {
     title: `${match.genre} games — KeyFerret`,
     description: `Every ${match.genre} game in the catalog, with prices compared across every storefront that sells it.`,
+    alternates: { canonical: absoluteUrl(`/genre/${genre}`) },
   };
 }
 

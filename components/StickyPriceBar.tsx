@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import { formatPrice, usePricing } from "@/lib/pricing-client";
+import { trackEvent } from "@/lib/analytics-client";
 import type { Game } from "@/lib/types";
 
 type StickyPriceBarProps = {
@@ -55,6 +56,7 @@ export default function StickyPriceBar({ game }: StickyPriceBarProps) {
                 href={bestOffer.purchaseUrl}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
+                onClick={() => trackEvent({ type: "offer_click", gameSlug: game.slug, storeName: bestOffer.storeName, metadata: { dealId: bestOffer.dealId, price: bestOffer.price } })}
                 className="flex shrink-0 items-center gap-1 rounded-full bg-gradient-to-r from-accent to-accent-2 px-4 py-2 text-xs font-semibold text-white transition-transform hover:scale-105 hover:opacity-90 active:scale-100"
               >
                 Get deal

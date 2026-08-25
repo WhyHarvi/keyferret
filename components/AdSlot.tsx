@@ -1,29 +1,23 @@
-// Placeholder ad unit. Sized to standard IAB formats so the layout won't
-// jump once real ads are wired in. This site has no ad-network account yet
-// — when one exists, replace the placeholder <div> below with the network's
-// real unit, e.g. for Google AdSense:
-//
-//   1. Add the loader script once in app/layout.tsx <head>:
-//      <script
-//        async
-//        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX`}
-//        crossOrigin="anonymous"
-//      />
-//   2. Replace the placeholder below with:
-//      <ins
-//        className="adsbygoogle"
-//        style={{ display: "block" }}
-//        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-//        data-ad-slot="YOUR_AD_SLOT_ID"
-//        data-ad-format="auto"
-//        data-full-width-responsive="true"
-//      />
-//      then call `(window.adsbygoogle = window.adsbygoogle || []).push({})`
-//      in a useEffect so the slot actually renders.
-//   3. Add public/ads.txt with the line AdSense gives you in your account.
+"use client";
+
+// Renders the real AdSense unit once NEXT_PUBLIC_ADSENSE_CLIENT_ID is set
+// (the loader script itself is added conditionally in app/layout.tsx);
+// otherwise renders the placeholder unchanged. Once that env var is set,
+// the only remaining step is swapping each call site's `slotId` placeholder
+// for the real ad-unit ID from your AdSense dashboard — a one-line change,
+// not a second env var per placement.
+
+import { useEffect, useRef } from "react";
+
+declare global {
+  interface Window {
+    adsbygoogle?: unknown[];
+  }
+}
 
 type AdSlotProps = {
   format?: "leaderboard" | "rectangle" | "banner";
+  slotId?: string;
   className?: string;
 };
 
@@ -33,17 +27,45 @@ const FORMAT_META: Record<NonNullable<AdSlotProps["format"]>, { minHeight: strin
   banner: { minHeight: "100px", note: "responsive banner" },
 };
 
-export default function AdSlot({ format = "banner", className = "" }: AdSlotProps) {
+const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
+
+export default function AdSlot({ format = "banner", slotId = "0000000000", className = "" }: AdSlotProps) {
   const meta = FORMAT_META[format];
+  const insRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (!ADSENSE_CLIENT_ID || pushed.current) return;
+    pushed.current = true;
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (error) {
+      console.error("AdSense push failed", error);
+    }
+  }, []);
+
+  if (!ADSENSE_CLIENT_ID) {
+    return (
+      <div
+        role="complementary"
+        aria-label="Advertisement"
+        className={`flex w-full items-center justify-center rounded-xl border border-dashed border-border bg-surface/40 text-xs text-text-muted ${className}`}
+        style={{ minHeight: meta.minHeight }}
+      >
+        Ad space · {meta.note}
+      </div>
+    );
+  }
 
   return (
-    <div
-      role="complementary"
-      aria-label="Advertisement"
-      className={`flex w-full items-center justify-center rounded-xl border border-dashed border-border bg-surface/40 text-xs text-text-muted ${className}`}
-      style={{ minHeight: meta.minHeight }}
-    >
-      Ad space · {meta.note}
-    </div>
+    <ins
+      ref={insRef}
+      className={`adsbygoogle block ${className}`}
+      style={{ display: "block", minHeight: meta.minHeight }}
+      data-ad-client={ADSENSE_CLIENT_ID}
+      data-ad-slot={slotId}
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    />
   );
 }
