@@ -10,7 +10,12 @@ export const getGameBySlug = cache(async (slug: string): Promise<Game | undefine
 
   if (prisma) {
     const stored = await prisma.game.findUnique({ where: { slug } });
-    if (stored) return stored.metadata as unknown as Game;
+    if (stored) {
+      const metadata = stored.metadata as unknown as Partial<Game>;
+      // Records saved before ratingCount was added are refreshed once so we
+      // never invent a count or keep omitting a real one indefinitely.
+      if (typeof metadata.ratingCount === "number") return metadata as Game;
+    }
   }
 
   const game = await getIGDBGameBySlug(slug);

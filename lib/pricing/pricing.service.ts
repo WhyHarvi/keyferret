@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { getPrisma } from "@/lib/db";
 import { getGameBySlug } from "@/lib/game-repository";
 import { findCheapSharkGame, getCheapSharkHistoricalLow, getCheapSharkOffers } from "@/lib/pricing/cheapshark";
@@ -26,7 +27,7 @@ function fetchHistoricalLow(cheapSharkGameId: string | undefined): Promise<Prici
   });
 }
 
-export async function getOffersForGame(slug: string): Promise<PricingResult | undefined> {
+async function getOffersForGameUncached(slug: string): Promise<PricingResult | undefined> {
   const prisma = getPrisma();
   if (!prisma) throw new Error("DATABASE_URL is required for pricing lookups");
 
@@ -109,4 +110,23 @@ export async function getOffersForGame(slug: string): Promise<PricingResult | un
   ]);
 
   return result(gameSummary, offers, "cheapshark", historicalLow);
+}
+
+// Metadata and the page body both need the same pricing result. React cache
+// deduplicates that work during a single server render so SEO checks do not
+// create a second provider/database lookup.
+export const getOffersForGame = cache(getOffersForGameUncached);
+
+// Sitemap eligibility is intentionally database-backed. Generating a sitemap
+// must not fan out into hundreds of CheapShark requests, and a stored offer is
+// concrete evidence that KeyFerret can provide commercial value for the page.
+export async function getGameSlugsWithOffers(): Promise<Set<string>> {
+  const prisma = getPrisma();
+  if (!prisma) return new Set();
+
+  const games = await prisma.game.findMany({
+    where: { offers: { some: { provider: PROVIDER } } },
+    select: { slug: true },
+  });
+  return new Set(games.map((game) => game.slug));
 }

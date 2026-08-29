@@ -83,6 +83,15 @@ export function productJsonLd(game: Game, pricing?: PricingResult | null) {
     genre: game.genres.length > 0 ? game.genres : undefined,
     gamePlatform: game.platforms.length > 0 ? game.platforms : undefined,
     datePublished: game.releaseDate || undefined,
+    aggregateRating: game.rating > 0 && game.ratingCount > 0
+      ? {
+          "@type": "AggregateRating",
+          ratingValue: Number(game.rating.toFixed(1)),
+          bestRating: 5,
+          worstRating: 0,
+          ratingCount: game.ratingCount,
+        }
+      : undefined,
     offers,
   };
 }

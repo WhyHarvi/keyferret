@@ -1,11 +1,11 @@
 import "server-only";
 import type { Game } from "@/lib/types";
 
-const GAME_FIELDS = `id,slug,name,summary,storyline,cover.image_id,artworks.image_id,artworks.width,artworks.height,screenshots.image_id,screenshots.width,screenshots.height,videos.name,videos.video_id,first_release_date,genres.name,platforms.name,rating,themes.name,game_modes.name,player_perspectives.name,game_engines.name,franchises.name`;
+const GAME_FIELDS = `id,slug,name,summary,storyline,cover.image_id,artworks.image_id,artworks.width,artworks.height,screenshots.image_id,screenshots.width,screenshots.height,videos.name,videos.video_id,first_release_date,genres.name,platforms.name,rating,rating_count,themes.name,game_modes.name,player_perspectives.name,game_engines.name,franchises.name`;
 
 type IGDBImage = { image_id?: string; width?: number; height?: number };
 type NamedIGDBEntity = { name: string };
-type IGDBGame = { id: number; slug?: string; name: string; summary?: string; storyline?: string; cover?: IGDBImage; artworks?: IGDBImage[]; screenshots?: IGDBImage[]; videos?: Array<{ name?: string; video_id?: string }>; first_release_date?: number; genres?: NamedIGDBEntity[]; platforms?: NamedIGDBEntity[]; rating?: number; themes?: NamedIGDBEntity[]; game_modes?: NamedIGDBEntity[]; player_perspectives?: NamedIGDBEntity[]; game_engines?: NamedIGDBEntity[]; franchises?: NamedIGDBEntity[] };
+type IGDBGame = { id: number; slug?: string; name: string; summary?: string; storyline?: string; cover?: IGDBImage; artworks?: IGDBImage[]; screenshots?: IGDBImage[]; videos?: Array<{ name?: string; video_id?: string }>; first_release_date?: number; genres?: NamedIGDBEntity[]; platforms?: NamedIGDBEntity[]; rating?: number; rating_count?: number; themes?: NamedIGDBEntity[]; game_modes?: NamedIGDBEntity[]; player_perspectives?: NamedIGDBEntity[]; game_engines?: NamedIGDBEntity[]; franchises?: NamedIGDBEntity[] };
 let cachedToken: { value: string; expiresAt: number; clientId: string } | null = null;
 
 export async function getIGDBAccessToken(forceRefresh = false): Promise<string> {
@@ -98,6 +98,7 @@ function toGame(game: IGDBGame): Game {
     franchises: game.franchises?.map(({ name }) => name) ?? [],
     genres: game.genres?.map(({ name }) => name) ?? [], platforms: game.platforms?.map(({ name }) => name) ?? [],
     rating: game.rating ? game.rating / 20 : 0,
+    ratingCount: game.rating_count ?? 0,
     releaseDate: game.first_release_date ? new Date(game.first_release_date * 1000).toISOString() : "", prices: [],
   };
 }

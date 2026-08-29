@@ -3,12 +3,16 @@ import { getPopularGames } from "@/lib/igdb";
 import { getGenreCounts } from "@/lib/genres";
 import { DEAL_FILTERS } from "@/lib/deal-filters";
 import { SITE_URL } from "@/lib/seo";
+import { getGameSlugsWithOffers } from "@/lib/pricing/pricing.service";
 
 // DEAL_FILTERS lands with the /deals pages built right after this file —
 // sitemap and filter registry ship together, this import isn't a dangling ref.
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const games = await getPopularGames(100);
+  const [games, gameSlugsWithOffers] = await Promise.all([
+    getPopularGames(100),
+    getGameSlugsWithOffers(),
+  ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: SITE_URL, changeFrequency: "daily", priority: 1 },
@@ -30,8 +34,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  const gameRoutes: MetadataRoute.Sitemap = games.map((game) => ({
-    url: `${SITE_URL}/game/${game.slug}`,
+  const gameRoutes: MetadataRoute.Sitemap = Array.from(gameSlugsWithOffers).map((slug) => ({
+    url: `${SITE_URL}/game/${slug}`,
     changeFrequency: "daily",
     priority: 0.9,
   }));

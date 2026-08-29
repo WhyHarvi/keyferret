@@ -26,6 +26,7 @@ export type Game = {
   genres: string[];
   platforms: string[];
   rating: number; // 0-5
+  ratingCount: number; // genuine IGDB user-rating count; 0 when unavailable
   releaseDate: string;
   prices: RetailerPrice[];
 };
