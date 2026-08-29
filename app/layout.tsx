@@ -13,7 +13,7 @@ const manrope = Manrope({
 
 const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
 
-const SITE_DESCRIPTION = "Find the cheapest price for any game, compared across every storefront that sells it.";
+const SITE_DESCRIPTION = "Compare game prices across multiple stores and find the cheapest available deals.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

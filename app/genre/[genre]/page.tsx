@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: GenrePageProps): Promise<Meta
   if (!match) return { title: "Genre not found — KeyFerret" };
 
   const title = `${match.genre} games — KeyFerret`;
-  const description = `Every ${match.genre} game in the catalog, with prices compared across every storefront that sells it.`;
+  const description = `Browse ${match.genre} games and compare available prices across multiple stores.`;
 
   return {
     title,

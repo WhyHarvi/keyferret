@@ -14,7 +14,7 @@ const columns: FooterColumnData[] = [
       { label: "Browse", href: "/games" },
       { label: "All games", href: "/games" },
       { label: "Deals", href: "/deals" },
-      { label: "Popular", href: "/#trending" },
+      { label: "Trending deals", href: "/#trending-deals" },
       { label: "Watchlist", href: "/watchlist" },
     ],
   },
@@ -55,7 +55,7 @@ export default function Footer() {
               <span className="text-lg font-bold tracking-tight text-text-main">KeyFerret</span>
             </Link>
             <p className="mt-3 max-w-[26ch] text-sm text-text-muted">
-              The fastest way to find a game&apos;s lowest price, across every storefront that sells it.
+              Compare game prices across multiple stores and find the cheapest available deal.
             </p>
           </div>
 

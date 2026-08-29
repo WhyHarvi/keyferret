@@ -144,7 +144,7 @@ export default function LivePriceCompare({ slug }: { slug: string }) {
             <h2 id="price-comparison-title" className="text-lg font-semibold tracking-tight text-text-main sm:text-xl">
               Price comparison
             </h2>
-            <p className="text-sm text-text-muted">Live offers across every storefront that sells it.</p>
+            <p className="text-sm text-text-muted">Live offers across multiple game stores.</p>
           </div>
         </div>
         {pricing && pricing.offers.length > 0 && (

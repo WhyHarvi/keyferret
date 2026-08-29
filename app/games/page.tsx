@@ -5,7 +5,7 @@ import { getPopularGames } from "@/lib/igdb";
 import { absoluteUrl, socialMeta } from "@/lib/seo";
 
 const TITLE = "All games — KeyFerret";
-const DESCRIPTION = "Every game in the catalog, with prices compared across every storefront that sells it.";
+const DESCRIPTION = "Browse games and compare available prices across multiple stores.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -19,7 +19,7 @@ export default async function AllGamesPage() {
   return (
     <GameGridPage
       eyebrow="Catalog"
-      title="Every game, every storefront."
+      title="Browse games and compare available prices."
       description="Browse the full catalog, or head back and filter by genre."
       icon={Layers}
       games={games}

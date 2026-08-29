@@ -1,28 +1,32 @@
 import { Flame } from "lucide-react";
 import ScrollRow from "@/components/ScrollRow";
-import TrendingCard from "@/components/TrendingCard";
-import type { Game } from "@/lib/types";
+import DealListingCard from "@/components/DealListingCard";
+import type { Deal } from "@/lib/pricing/cheapshark";
 
 type TrendingRowProps = {
-  games: Game[];
+  deals: Deal[];
 };
 
-export default function TrendingRow({ games }: TrendingRowProps) {
+export default function TrendingRow({ deals }: TrendingRowProps) {
+  if (deals.length === 0) return null;
+
   return (
     <ScrollRow
-      id="trending"
-      ariaLabel="Trending now"
-      eyebrow="Trending"
-      itemSelector="[data-trending-card]"
+      id="trending-deals"
+      ariaLabel="Trending game deals"
+      eyebrow="Current offers"
+      itemSelector="[data-trending-deal]"
       title={
         <>
           <Flame size={20} className="fill-accent text-accent" aria-hidden="true" />
-          Popular games on IGDB
+          Trending deals
         </>
       }
     >
-      {games.map((game, i) => (
-        <TrendingCard key={game.id} game={game} rank={i + 1} />
+      {deals.map((deal) => (
+        <div key={deal.dealId} data-trending-deal className="w-[230px] shrink-0 snap-start sm:w-[250px] md:w-[270px]">
+          <DealListingCard deal={deal} />
+        </div>
       ))}
     </ScrollRow>
   );

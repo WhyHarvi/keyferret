@@ -34,7 +34,7 @@ export default function BrowseSection({ games }: BrowseSectionProps) {
   return (
     <section id="browse" className="scroll-mt-24 pt-28">
       <p className="text-sm font-medium text-text-muted">Browse</p>
-      <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-main">Explore every storefront in one place.</h2>
+      <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-main">Explore games and compare prices across multiple stores.</h2>
 
       <motion.div
         initial="hidden"

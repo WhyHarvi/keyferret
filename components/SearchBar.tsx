@@ -99,7 +99,7 @@ export default function SearchBar({ onClose, className = "" }: SearchBarProps) {
         className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-2xl border border-white/10 bg-surface/95 p-2 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl"
       >
         <p className="px-3 pb-2 pt-1 text-xs font-medium uppercase tracking-wide text-text-muted">
-          {query.trim() ? `Results for "${query.trim()}"` : "Trending now"}
+          {query.trim() ? `Results for "${query.trim()}"` : "Popular games"}
         </p>
 
         {loading ? (
