@@ -42,7 +42,7 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
   return (
     <section
       id="hero"
-      aria-labelledby="home-hero-title"
+      aria-labelledby="hero-game-title"
       className="relative h-[88vh] max-h-[780px] min-h-[620px] w-full overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -70,15 +70,6 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
 
       <div className="relative flex h-full flex-col justify-end px-6 pb-16 sm:px-10 sm:pb-20">
         <div className="mx-auto w-full max-w-7xl">
-          <div className="mb-7 max-w-3xl">
-            <h1 id="home-hero-title" className="font-display text-4xl font-extrabold tracking-[-0.035em] text-text-main sm:text-5xl lg:text-6xl">
-              Compare Game Prices. Find the Cheapest Deal.
-            </h1>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-text-muted sm:text-lg">
-              Compare PC game prices across multiple stores and find today&apos;s cheapest available deals.
-            </p>
-          </div>
-
           <AnimatePresence mode="wait">
             <motion.div
               key={game.id}
@@ -102,9 +93,9 @@ export default function HeroCarousel({ games }: HeroCarouselProps) {
                 )}
               </div>
 
-              <h2 className="mt-3 max-w-2xl font-display text-3xl font-extrabold tracking-[-0.02em] text-text-main sm:text-4xl">
+              <h1 id="hero-game-title" className="mt-3 max-w-2xl font-display text-3xl font-extrabold tracking-[-0.02em] text-text-main sm:text-4xl">
                 {game.title}
-              </h2>
+              </h1>
 
               <p className="mt-4 line-clamp-2 max-w-xl text-base leading-7 text-text-muted sm:text-lg">
                 {game.tagline ?? game.description}
