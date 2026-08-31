@@ -12,6 +12,7 @@ const manrope = Manrope({
 });
 
 const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
+const skimlinksId = process.env.NEXT_PUBLIC_SKIMLINKS_ID?.trim();
 
 const SITE_DESCRIPTION = "Compare game prices across multiple stores and find the cheapest available deals.";
 
@@ -47,6 +48,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             async
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
             crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
+        {skimlinksId && (
+          // Rewrites outbound "Get deal" / "View deal" links to Skimlinks'
+          // affiliate-tagged equivalents client-side when a merchant match
+          // exists — no server-side link wrapping needed.
+          <Script
+            src={`https://s.skimresources.com/js/${skimlinksId}.skimlinks.js`}
             strategy="beforeInteractive"
           />
         )}
